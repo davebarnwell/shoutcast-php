@@ -43,7 +43,6 @@ class ShoutCast {
         $entry['artistTitle'] = substr($entry['artistTitle'], 0, -2);
       }
       if (preg_match("/^(wdj|ekr|ad|jingle|promo)\b/i", $entry['artistTitle'])) {
-        //echo 'Skipped '.$entry['artistTitle']."\n";
         continue; // skip entries that start with these words
       }
 
