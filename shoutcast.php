@@ -25,35 +25,34 @@ class ShoutCast {
    * @return array of song objects (artistTitle, playedAt, artist, title)
    */
   public function getRecentlyPlayed() {
-  $buffer = "";
-  $songs  = array();
-  
-  $buffer = self::getData('http://'.$this->address.'/admin.cgi?mode=viewxml&pass='.$this->password.'&page=4');
-  
-  $xml    = simplexml_load_string($buffer); 
-  
-  foreach ($xml->SONGHISTORY->SONG as $song) {
-    $entry = array(
-      'artistTitle' => trim($song->TITLE),
-      'playedAt'    => date("r", (int) $song->PLAYEDAT),
-      'artist'      => null,
-      'title'       => null
-    );
-  
-    if (substr($entry['artistTitle'], -2) == ' -') { // remove trailing space hypen
-      $entry['artistTitle'] = substr($entry['artistTitle'], 0, -2);
+    $songs  = array();
+
+    $buffer = self::getData('http://'.$this->address.'/admin.cgi?mode=viewxml&pass='.$this->password.'&page=4');
+
+    $xml    = simplexml_load_string($buffer); 
+
+    foreach ($xml->SONGHISTORY->SONG as $song) {
+      $entry = array(
+        'artistTitle' => trim($song->TITLE),
+        'playedAt'    => date("r", (int) $song->PLAYEDAT),
+        'artist'      => null,
+        'title'       => null
+      );
+
+      if (substr($entry['artistTitle'], -2) == ' -') { // remove trailing space hypen
+        $entry['artistTitle'] = substr($entry['artistTitle'], 0, -2);
+      }
+      if (preg_match("/^(wdj|ekr|ad|jingle|promo)\b/i", $entry['artistTitle'])) {
+        //echo 'Skipped '.$entry['artistTitle']."\n";
+        continue; // skip entries that start with these words
+      }
+
+      // now construct artist - title
+      list($entry['artist'], $entry['title']) = explode(' - ', $entry['artistTitle'], 2);
+      $songs[] = (object) $entry;
     }
-    if (preg_match("/^(wdj|ekr|ad|jingle|promo)\b/i", $entry['artistTitle'])) {
-      //echo 'Skipped '.$entry['artistTitle']."\n";
-      continue; // skip entries that start with these words
-    }
-  
-    // now construct artist - title
-    list($entry['artist'], $entry['title']) = explode(' - ', $entry['artistTitle'], 2);
-    $songs[] = (object) $entry;
-  }
-  
-  return $songs;
+
+    return $songs;
   }
 
 
@@ -87,4 +86,4 @@ class ShoutCast {
     return $output;
   }
 }
-?>
+
