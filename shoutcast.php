@@ -13,7 +13,7 @@ class ShoutCast {
    * @param string $streamAddress IP address or domain name plus port eg. 192.168.0.1:8888 or mystation.com:8888
    * @param string $password password set on the SHOUTcast DNAS
    */
-  function __construct($streamAddress,$password) {
+  public function __construct($streamAddress,$password) {
     $this->address  = $streamAddress;
     $this->password = $password;
   }
@@ -24,41 +24,41 @@ class ShoutCast {
    *
    * @return array of song objects (artistTitle, playedAt, artist, title)
    */
-  function getRecentlyPlayed() {
-    $buffer = "";
-    $songs  = array();
-
-    $buffer = self::getData('http://'.$this->address.'/admin.cgi?mode=viewxml&pass='.$this->password.'&page=4');
-    
-    $xml    = simplexml_load_string($buffer); 
-    
-    foreach ($xml->SONGHISTORY->SONG as $song){
-      $entry = array(
-        'artistTitle' => trim($song->TITLE),
-        'playedAt'    => date("r",(int) $song->PLAYEDAT),
-        'artist'      => null,
-        'title'       => null
-      );
-
-      if(substr($entry['artistTitle'], -2) == ' -') { // remove trailing space hypen
-        $entry['artistTitle'] = substr($entry['artistTitle'], 0,-2);
-      }
-      if (preg_match("/^(wdj|ekr|ad|jingle|promo)\b/i", $entry['artistTitle'])) {
-        //echo 'Skipped '.$entry['artistTitle']."\n";
-        continue; // skip entries that start with these words
-      }
-      
-      // now construct artist - title
-      list($entry['artist'],$entry['title']) = explode(' - ',$entry['artistTitle'],2);
-      $songs[] = (object) $entry;
+  public function getRecentlyPlayed() {
+  $buffer = "";
+  $songs  = array();
+  
+  $buffer = self::getData('http://'.$this->address.'/admin.cgi?mode=viewxml&pass='.$this->password.'&page=4');
+  
+  $xml    = simplexml_load_string($buffer); 
+  
+  foreach ($xml->SONGHISTORY->SONG as $song){
+    $entry = array(
+      'artistTitle' => trim($song->TITLE),
+      'playedAt'    => date("r",(int) $song->PLAYEDAT),
+      'artist'      => null,
+      'title'       => null
+    );
+  
+    if(substr($entry['artistTitle'], -2) == ' -') { // remove trailing space hypen
+      $entry['artistTitle'] = substr($entry['artistTitle'], 0,-2);
     }
-    
-    return $songs;
+    if (preg_match("/^(wdj|ekr|ad|jingle|promo)\b/i", $entry['artistTitle'])) {
+      //echo 'Skipped '.$entry['artistTitle']."\n";
+      continue; // skip entries that start with these words
+    }
+  
+    // now construct artist - title
+    list($entry['artist'],$entry['title']) = explode(' - ',$entry['artistTitle'],2);
+    $songs[] = (object) $entry;
+  }
+  
+  return $songs;
   }
 
 
-  // returns content from the specified URL
-  static private function getData($url) {
+   // returns content from the specified URL
+   private static function getData($url) {
     $ch = curl_init($url);
     curl_setopt_array(
       $ch,
